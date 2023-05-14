@@ -17,7 +17,6 @@ pub fn spawn<A: Into<SocketAddr>>(addr: A) {
         move |client_ip: IpAddr, ws: Ws| {
             ws.on_upgrade(move |w| {
                 async move { handle_new_connection(client_ip, w).await }
-                    .instrument(observability::remote_trace("handle_websocket"))
             })
         },
     );
@@ -88,7 +87,6 @@ async fn handle_new_connection(client_ip: IpAddr, websocket: WebSocket) {
         async move {
             tunnel_client(client_clone, sink, rx).await;
         }
-        .instrument(observability::remote_trace("tunnel_client")),
     );
 
     let client_clone = client.clone();
@@ -97,7 +95,6 @@ async fn handle_new_connection(client_ip: IpAddr, websocket: WebSocket) {
         async move {
             process_client_messages(client_clone, stream).await;
         }
-        .instrument(observability::remote_trace("process_client")),
     );
 
     // play ping pong
@@ -132,7 +129,6 @@ async fn handle_new_connection(client_ip: IpAddr, websocket: WebSocket) {
                 tokio::time::sleep(Duration::new(PING_INTERVAL, 0)).await;
             }
         }
-        .instrument(observability::remote_trace("control_ping")),
     );
 }
 

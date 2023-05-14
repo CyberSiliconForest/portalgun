@@ -103,21 +103,17 @@ pub async fn accept_connection(socket: TcpStream) {
     ACTIVE_STREAMS.insert(stream_id.clone(), active_stream.clone());
 
     // read from socket, write to client
-    let span = observability::remote_trace("process_tcp_stream");
     tokio::spawn(
         async move {
             process_tcp_stream(active_stream, stream).await;
         }
-        .instrument(span),
     );
 
     // read from client, write to socket
-    let span = observability::remote_trace("tunnel_to_stream");
     tokio::spawn(
         async move {
             tunnel_to_stream(host, stream_id, sink, queue_rx).await;
         }
-        .instrument(span),
     );
 }
 
