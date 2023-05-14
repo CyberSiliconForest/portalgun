@@ -40,6 +40,9 @@ pub struct Config {
 
     /// The host on which we create tunnels on
     pub tunnel_host: String,
+
+    /// Temporal solution: preshared environment token
+    pub env_token: String,
 }
 
 impl Config {
@@ -76,6 +79,8 @@ impl Config {
 
         let tunnel_host = std::env::var("TUNNEL_HOST").unwrap_or("tunnelto.dev".to_string());
 
+        let env_token = std::env::var("TUNNELTO_TOKEN").expect("TUNNELTO_TOKEN is required");
+
         Config {
             allowed_hosts,
             blocked_sub_domains,
@@ -88,6 +93,7 @@ impl Config {
             instance_id,
             blocked_ips,
             tunnel_host,
+            env_token,
         }
     }
 }
