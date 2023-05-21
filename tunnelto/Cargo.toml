@@ -34,7 +34,7 @@ indicatif = "0.15.0"
 httparse = "1.8.0"
 warp = "0.3"
 bytes = "1.4"
-askama = { version = "0.9.0", features = ["serde-json"] } # TODO: Update me
+askama = { version = "0.12.0", features = ["serde-json"] } # TODO: Update me
 chrono = "0.4.24"
 uuid = {version = "1.3", features = ["serde", "v4"] }
 hyper = "0.14"

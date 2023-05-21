@@ -33,11 +33,11 @@
                 <td class="is-narrow has-text-weight-bold">
                     {% if request.status >= 200 && request.status < 300 %}
                     <span class="has-text-success">{{request.status}}</span>
-                    {% elseif request.status >= 300 && request.status < 400 %}
+                    {% else if request.status >= 300 && request.status < 400 %}
                     <span class="has-text-info">{{request.status}}</span>
-                    {% elseif request.status >= 400 && request.status < 500 %}
+                    {% else if request.status >= 400 && request.status < 500 %}
                     <span class="has-text-warning-dark">{{request.status}}</span>
-                    {% elseif request.status >= 500 %}
+                    {% else if request.status >= 500 %}
                     <span class="has-text-danger">{{request.status}}</span>
                     {% else %}
                     <span class="">{{request.status}}</span>

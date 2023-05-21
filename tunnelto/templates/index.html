@@ -36,11 +36,11 @@
                 <td class="is-narrow has-text-weight-bold">
                     {% if r.status >= 200 && r.status < 300 %}
                     <span class="has-text-success">{{r.status}}</span>
-                    {% elseif r.status >= 300 && r.status < 400 %}
+                    {% else if r.status >= 300 && r.status < 400 %}
                     <span class="has-text-info">{{r.status}}</span>
-                    {% elseif r.status >= 400 && r.status < 500 %}
+                    {% else if r.status >= 400 && r.status < 500 %}
                     <span class="has-text-warning-dark">{{r.status}}</span>
-                    {% elseif r.status >= 500 %}
+                    {% else if r.status >= 500 %}
                     <span class="has-text-danger">{{r.status}}</span>
                     {% else %}
                     <span class="">{{r.status}}</span>
