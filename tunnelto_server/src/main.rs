@@ -30,7 +30,7 @@ mod config;
 pub use self::config::Config;
 mod network;
 
-use tracing::{error, info, Instrument};
+use tracing::{error, info};
 
 lazy_static! {
     pub static ref CONNECTIONS: Connections = Connections::new();

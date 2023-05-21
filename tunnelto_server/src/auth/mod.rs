@@ -35,7 +35,7 @@ impl SigKey {
     }
 
     pub fn sign(&self, data: &[u8]) -> Signature {
-        let sig = hmac_sha256::HMAC::mac(data, &self.0).to_vec();
+        let sig = hmac_sha256::HMAC::mac(data, self.0).to_vec();
         Signature(hex::encode(sig))
     }
 
@@ -44,7 +44,7 @@ impl SigKey {
             Ok(s) => s,
             Err(_) => return false,
         };
-        let expected = hmac_sha256::HMAC::mac(data, &self.0).to_vec();
+        let expected = hmac_sha256::HMAC::mac(data, self.0).to_vec();
         signature == expected
     }
 }

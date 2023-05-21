@@ -31,7 +31,7 @@ impl ReconnectTokenPayload {
         let payload = serde_json::to_string(&self)?;
         let sig = key.sign(payload.as_bytes());
         let tok = ReconnectTokenInner { payload, sig };
-        let tok = base64::engine::general_purpose::STANDARD.encode(&serde_json::to_vec(&tok)?);
+        let tok = base64::engine::general_purpose::STANDARD.encode(serde_json::to_vec(&tok)?);
         Ok(ReconnectToken(tok))
     }
 

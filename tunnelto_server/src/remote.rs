@@ -3,7 +3,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::io::{ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tracing::debug;
-use tracing::{error, Instrument};
+use tracing::{error};
 
 async fn direct_to_control(mut incoming: TcpStream) {
     let mut control_socket =
@@ -67,7 +67,7 @@ pub async fn accept_connection(socket: TcpStream) {
 
     // find the client listening for this host
     let client = match Connections::find_by_host(&host) {
-        Some(client) => client.clone(),
+        Some(client) => client,
         None => {
             // check other instances that may be serving this host
             match network::instance_for_host(&host).await {
@@ -90,7 +90,7 @@ pub async fn accept_connection(socket: TcpStream) {
     };
 
     // allocate a new stream for this request
-    let (active_stream, queue_rx) = ActiveStream::new(client.clone());
+    let (active_stream, queue_rx) = ActiveStream::new(client);
     let stream_id = active_stream.id.clone();
 
     tracing::debug!(
@@ -127,7 +127,7 @@ fn validate_host_prefix(host: &str) -> Option<String> {
         }
     };
 
-    let domain_segments = host.split(".").collect::<Vec<&str>>();
+    let domain_segments = host.split('.').collect::<Vec<&str>>();
     let prefix = &domain_segments[0];
     let remaining = &domain_segments[1..].join(".");
 
@@ -139,17 +139,17 @@ fn validate_host_prefix(host: &str) -> Option<String> {
 }
 
 /// Response Constants
-const HTTP_REDIRECT_RESPONSE:&'static [u8] = b"HTTP/1.1 301 Moved Permanently\r\nLocation: https://tunnelto.dev/\r\nContent-Length: 20\r\n\r\nhttps://tunnelto.dev";
-const HTTP_INVALID_HOST_RESPONSE: &'static [u8] =
+const HTTP_REDIRECT_RESPONSE:&[u8] = b"HTTP/1.1 301 Moved Permanently\r\nLocation: https://tunnelto.dev/\r\nContent-Length: 20\r\n\r\nhttps://tunnelto.dev";
+const HTTP_INVALID_HOST_RESPONSE: &[u8] =
     b"HTTP/1.1 400\r\nContent-Length: 23\r\n\r\nError: Invalid Hostname";
-const HTTP_NOT_FOUND_RESPONSE: &'static [u8] =
+const HTTP_NOT_FOUND_RESPONSE: &[u8] =
     b"HTTP/1.1 404\r\nContent-Length: 23\r\n\r\nError: Tunnel Not Found";
-const HTTP_ERROR_LOCATING_HOST_RESPONSE: &'static [u8] =
+const HTTP_ERROR_LOCATING_HOST_RESPONSE: &[u8] =
     b"HTTP/1.1 500\r\nContent-Length: 27\r\n\r\nError: Error finding tunnel";
-const HTTP_TUNNEL_REFUSED_RESPONSE: &'static [u8] =
+const HTTP_TUNNEL_REFUSED_RESPONSE: &[u8] =
     b"HTTP/1.1 500\r\nContent-Length: 32\r\n\r\nTunnel says: connection refused.";
-const HTTP_OK_RESPONSE: &'static [u8] = b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok";
-const HEALTH_CHECK_PATH: &'static [u8] = b"/0xDEADBEEF_HEALTH_CHECK";
+const HTTP_OK_RESPONSE: &[u8] = b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok";
+const HEALTH_CHECK_PATH: &[u8] = b"/0xDEADBEEF_HEALTH_CHECK";
 
 struct StreamWithPeekedHost {
     socket: TcpStream,
@@ -203,7 +203,7 @@ async fn peek_http_request_host(mut socket: TcpStream) -> Option<StreamWithPeeke
     let forwarded_for = if let Some(Ok(forwarded_for)) = req
         .headers
         .iter()
-        .filter(|h| h.name.to_lowercase() == "x-forwarded-for".to_string())
+        .filter(|h| h.name.to_lowercase() == *"x-forwarded-for")
         .map(|h| std::str::from_utf8(h.value))
         .next()
     {
@@ -216,7 +216,7 @@ async fn peek_http_request_host(mut socket: TcpStream) -> Option<StreamWithPeeke
     if let Some(Ok(host)) = req
         .headers
         .iter()
-        .filter(|h| h.name.to_lowercase() == "host".to_string())
+        .filter(|h| h.name.to_lowercase() == *"host")
         .map(|h| std::str::from_utf8(h.value))
         .next()
     {

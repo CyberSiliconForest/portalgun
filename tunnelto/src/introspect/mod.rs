@@ -139,7 +139,7 @@ async fn collect_stream(
     let mut response_headers = [httparse::EMPTY_HEADER; 100];
     let mut response = httparse::Response::new(&mut response_headers);
 
-    let parts_len = match response.parse(&collected_response.as_slice()) {
+    let parts_len = match response.parse(collected_response.as_slice()) {
         Ok(httparse::Status::Complete(len)) => len,
         _ => 0,
     };
@@ -209,7 +209,7 @@ struct BodyData {
 
 impl AsRef<BodyData> for BodyData {
     fn as_ref(&self) -> &BodyData {
-        &self
+        self
     }
 }
 
@@ -223,8 +223,7 @@ async fn inspector() -> Result<Page<Inspector>, warp::reject::Rejection> {
     let mut requests: Vec<Request> = REQUESTS
         .read()
         .unwrap()
-        .values()
-        .map(|r| r.clone())
+        .values().cloned()
         .collect();
     requests.sort_by(|a, b| b.completed.cmp(&a.completed));
     let inspect = Inspector { requests };
@@ -279,7 +278,7 @@ async fn replay_request(
     tokio::spawn(async move {
         // keep the rx alive
         let mut rx = rx;
-        while let Some(_) = rx.next().await {
+        while (rx.next().await).is_some() {
             // do nothing
         }
     });

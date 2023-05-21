@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
 
-const HTTP_ERROR_PROXYING_TUNNEL_RESPONSE: &'static [u8] =
+const HTTP_ERROR_PROXYING_TUNNEL_RESPONSE: &[u8] =
     b"HTTP/1.1 500\r\nContent-Length: 28\r\n\r\nError: Error proxying tunnel";
 
 pub async fn proxy_stream(instance: Instance, mut stream: TcpStream) {

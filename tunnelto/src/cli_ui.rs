@@ -23,7 +23,7 @@ impl CliInterface {
 
     fn get_sub_domain_notice(&self, sub_domain: &str) -> Option<String> {
         if self.config.sub_domain.is_some()
-            && (self.config.sub_domain.as_ref().map(|s| s.as_str()) != Some(sub_domain))
+            && (self.config.sub_domain.as_deref() != Some(sub_domain))
         {
             if self.config.secret_key.is_some() {
                 Some(format!("{}",
@@ -45,7 +45,7 @@ impl CliInterface {
             return;
         }
 
-        let public_url = self.config.activation_url(&full_hostname).bold().green();
+        let public_url = self.config.activation_url(full_hostname).bold().green();
         let forward_url = self.config.forward_url();
         let inspect = format!("http://localhost:{}", self.introspect.port());
 

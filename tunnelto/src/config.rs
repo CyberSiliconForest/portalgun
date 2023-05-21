@@ -3,16 +3,16 @@ use std::net::{SocketAddr, ToSocketAddrs};
 use super::*;
 use structopt::StructOpt;
 
-const HOST_ENV: &'static str = "CTRL_HOST";
-const PORT_ENV: &'static str = "CTRL_PORT";
-const TLS_OFF_ENV: &'static str = "CTRL_TLS_OFF";
+const HOST_ENV: &str = "CTRL_HOST";
+const PORT_ENV: &str = "CTRL_PORT";
+const TLS_OFF_ENV: &str = "CTRL_TLS_OFF";
 
-const DEFAULT_HOST: &'static str = "tunnelto.dev";
-const DEFAULT_CONTROL_HOST: &'static str = "wormhole.tunnelto.dev";
-const DEFAULT_CONTROL_PORT: &'static str = "10001";
+const DEFAULT_HOST: &str = "tunnelto.dev";
+const DEFAULT_CONTROL_HOST: &str = "wormhole.tunnelto.dev";
+const DEFAULT_CONTROL_PORT: &str = "10001";
 
-const SETTINGS_DIR: &'static str = ".tunnelto";
-const SECRET_KEY_FILE: &'static str = "key.token";
+const SETTINGS_DIR: &str = ".tunnelto";
+const SECRET_KEY_FILE: &str = "key.token";
 
 /// Command line arguments
 #[derive(Debug, StructOpt)]
@@ -155,11 +155,11 @@ impl Config {
 
         // get the host url
         let tls_off = env::var(TLS_OFF_ENV).is_ok();
-        let host = env::var(HOST_ENV).unwrap_or(format!("{}", DEFAULT_HOST));
+        let host = env::var(HOST_ENV).unwrap_or(DEFAULT_HOST.to_string());
 
-        let control_host = env::var(HOST_ENV).unwrap_or(format!("{}", DEFAULT_CONTROL_HOST));
+        let control_host = env::var(HOST_ENV).unwrap_or(DEFAULT_CONTROL_HOST.to_string());
 
-        let port = env::var(PORT_ENV).unwrap_or(format!("{}", DEFAULT_CONTROL_PORT));
+        let port = env::var(PORT_ENV).unwrap_or(DEFAULT_CONTROL_PORT.to_string());
 
         let scheme = if tls_off { "ws" } else { "wss" };
         let control_url = format!("{}://{}:{}/wormhole", scheme, control_host, port);
@@ -177,7 +177,7 @@ impl Config {
             sub_domain,
             dashboard_port: opts.dashboard_port.unwrap_or(0),
             verbose: opts.verbose,
-            secret_key: secret_key.map(|s| SecretKey(s)),
+            secret_key: secret_key.map(SecretKey),
             control_tls_off: tls_off,
             first_run: true,
         })

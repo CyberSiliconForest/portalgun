@@ -9,7 +9,7 @@ use tokio::io::{ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio_rustls::rustls::{ClientConfig, OwnedTrustAnchor, RootCertStore, ServerName};
 use tokio_rustls::TlsConnector;
-use webpki::DnsNameRef;
+
 
 use crate::introspect::{self, introspect_stream, IntrospectChannels};
 
@@ -50,8 +50,7 @@ pub async fn setup_new_stream(
         let config: ClientConfig = config_builder
             .with_safe_defaults()
             .with_root_certificates(root_cert_store)
-            .with_no_client_auth()
-            .into();
+            .with_no_client_auth();
         let config = TlsConnector::from(Arc::new(config));
         let dnsname = ServerName::try_from(dnsname.as_str()).unwrap();
 

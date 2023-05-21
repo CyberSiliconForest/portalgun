@@ -5,7 +5,7 @@ use chrono::Utc;
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::time::Duration;
-use tracing::{error, Instrument};
+use tracing::{error};
 use warp::Rejection;
 
 pub fn spawn<A: Into<SocketAddr>>(addr: A) {
@@ -32,17 +32,14 @@ fn client_ip() -> impl Filter<Extract = (IpAddr,), Error = Rejection> + Copy {
         .and(warp::addr::remote())
         .map(
             |client_ip: Option<String>, fwd: Option<String>, remote: Option<SocketAddr>| {
-                let client_ip = client_ip.map(|s| IpAddr::from_str(&s).ok()).flatten();
+                let client_ip = client_ip.and_then(|s| IpAddr::from_str(&s).ok());
                 let fwd = fwd
-                    .map(|s| {
-                        s.split(",")
-                            .into_iter()
+                    .and_then(|s| {
+                        s.split(',')
                             .next()
                             .map(IpAddr::from_str)
-                            .map(Result::ok)
-                            .flatten()
-                    })
-                    .flatten();
+                            .and_then(Result::ok)
+                    });
                 let remote = remote.map(|r| r.ip());
                 client_ip
                     .or(fwd)

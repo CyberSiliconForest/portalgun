@@ -58,7 +58,7 @@ async fn main() {
 
     loop {
         let (restart_tx, mut restart_rx) = unbounded();
-        let wormhole = run_wormhole(config.clone(), introspect_dash_addr.clone(), restart_tx);
+        let wormhole = run_wormhole(config.clone(), introspect_dash_addr, restart_tx);
         let result = futures::future::select(Box::pin(wormhole), restart_rx.next()).await;
         config.first_run = false;
 
@@ -298,17 +298,14 @@ async fn process_control_flow_message(
                 data.len()
             );
 
-            if !ACTIVE_STREAMS.read().unwrap().contains_key(&stream_id) {
-                if local::setup_new_stream(config.clone(), tunnel_tx.clone(), stream_id.clone())
+            if !ACTIVE_STREAMS.read().unwrap().contains_key(stream_id) && local::setup_new_stream(config.clone(), tunnel_tx.clone(), stream_id.clone())
                     .await
-                    .is_none()
-                {
-                    error!("failed to open local tunnel")
-                }
+                    .is_none() {
+                error!("failed to open local tunnel")
             }
 
             // find the right stream
-            let active_stream = ACTIVE_STREAMS.read().unwrap().get(&stream_id).cloned();
+            let active_stream = ACTIVE_STREAMS.read().unwrap().get(stream_id).cloned();
 
             // forward data to it
             if let Some(mut tx) = active_stream {
@@ -316,7 +313,7 @@ async fn process_control_flow_message(
                 info!("forwarded to local tcp ({})", stream_id.to_string());
             } else {
                 error!("got data but no stream to send it to.");
-                let _ = tunnel_tx
+                tunnel_tx
                     .send(ControlPacket::Refused(stream_id.clone()))
                     .await?;
             }

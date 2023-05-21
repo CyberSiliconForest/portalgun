@@ -1,5 +1,3 @@
-use std::str::from_boxed_utf8_unchecked;
-
 use base64::Engine;
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -21,7 +19,7 @@ impl SecretKey {
     pub fn client_id(&self) -> ClientId {
         ClientId(
             base64::engine::general_purpose::STANDARD
-                .encode(&sha2::Sha256::digest(self.0.as_bytes()).to_vec()),
+                .encode(sha2::Sha256::digest(self.0.as_bytes())),
         )
     }
 }
@@ -110,13 +108,13 @@ impl ClientId {
     pub fn generate() -> Self {
         let mut id = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut id);
-        ClientId(base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&id))
+        ClientId(base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(id))
     }
 
     pub fn safe_id(self) -> ClientId {
         ClientId(
             base64::engine::general_purpose::STANDARD
-                .encode(&sha2::Sha256::digest(self.0.as_bytes()).to_vec()),
+                .encode(sha2::Sha256::digest(self.0.as_bytes())),
         )
     }
 }
@@ -134,7 +132,7 @@ impl StreamId {
     pub fn to_string(&self) -> String {
         format!(
             "stream_{}",
-            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&self.0)
+            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(self.0)
         )
     }
 }

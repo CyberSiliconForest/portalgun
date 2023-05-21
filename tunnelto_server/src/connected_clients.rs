@@ -72,7 +72,7 @@ impl Connections {
     pub fn get(client_id: &ClientId) -> Option<ConnectedClient> {
         CONNECTIONS
             .clients
-            .get(&client_id)
+            .get(client_id)
             .map(|c| c.value().clone())
     }
 
