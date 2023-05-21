@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use super::*;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::{SinkExt, StreamExt};
@@ -5,9 +7,9 @@ use futures::{SinkExt, StreamExt};
 use tokio::io::{split, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::io::{ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
-use tokio_rustls::rustls::ClientConfig;
-use tokio_rustls::webpki::DNSNameRef;
+use tokio_rustls::rustls::{ClientConfig, OwnedTrustAnchor, RootCertStore, ServerName};
 use tokio_rustls::TlsConnector;
+use webpki::DnsNameRef;
 
 use crate::introspect::{self, introspect_stream, IntrospectChannels};
 
@@ -34,13 +36,24 @@ pub async fn setup_new_stream(
 
     let local_tcp: Box<dyn AnyTcpStream> = if config.use_tls {
         let dnsname = config.local_host;
-        let mut config = ClientConfig::new();
-        config
-            .root_store
-            .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+        let mut root_cert_store = RootCertStore::empty();
+        root_cert_store.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(
+            |ta| {
+                OwnedTrustAnchor::from_subject_spki_name_constraints(
+                    ta.subject,
+                    ta.spki,
+                    ta.name_constraints,
+                )
+            },
+        ));
+        let config_builder = ClientConfig::builder();
+        let config: ClientConfig = config_builder
+            .with_safe_defaults()
+            .with_root_certificates(root_cert_store)
+            .with_no_client_auth()
+            .into();
         let config = TlsConnector::from(Arc::new(config));
-        let dnsname =
-            DNSNameRef::try_from_ascii_str(dnsname.as_str()).ok()?;
+        let dnsname = ServerName::try_from(dnsname.as_str()).unwrap();
 
         let stream = match config.connect(dnsname, local_tcp).await {
             Ok(s) => s,

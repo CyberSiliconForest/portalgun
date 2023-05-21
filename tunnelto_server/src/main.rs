@@ -75,10 +75,8 @@ async fn main() {
             }
         };
 
-        tokio::spawn(
-            async move {
-                remote::accept_connection(socket).await;
-            }
-        );
+        tokio::spawn(async move {
+            remote::accept_connection(socket).await;
+        });
     }
 }

@@ -29,9 +29,6 @@ pub struct Config {
     /// Instance DNS discovery domain for gossip protocol
     pub gossip_dns_host: Option<String>,
 
-    /// Observability API key
-    pub honeycomb_api_key: Option<String>,
-
     /// The identifier for this instance of the server
     pub instance_id: String,
 
@@ -66,7 +63,6 @@ impl Config {
             .map(|app_name| format!("global.{}.internal", app_name))
             .ok();
 
-        let honeycomb_api_key = std::env::var("HONEYCOMB_API_KEY").ok();
         let instance_id = std::env::var("FLY_ALLOC_ID").unwrap_or(Uuid::new_v4().to_string());
         let blocked_ips = std::env::var("BLOCKED_IPS")
             .map(|s| {
@@ -89,7 +85,6 @@ impl Config {
             internal_network_port: get_port("NET_PORT", 6000),
             master_sig_key,
             gossip_dns_host,
-            honeycomb_api_key,
             instance_id,
             blocked_ips,
             tunnel_host,

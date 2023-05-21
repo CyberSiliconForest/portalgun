@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use super::{AuthService, AuthResult};
+use super::{AuthResult, AuthService};
 
 #[derive(Debug, Clone)]
 pub struct AuthTokenService {

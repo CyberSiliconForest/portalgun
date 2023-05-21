@@ -103,18 +103,14 @@ pub async fn accept_connection(socket: TcpStream) {
     ACTIVE_STREAMS.insert(stream_id.clone(), active_stream.clone());
 
     // read from socket, write to client
-    tokio::spawn(
-        async move {
-            process_tcp_stream(active_stream, stream).await;
-        }
-    );
+    tokio::spawn(async move {
+        process_tcp_stream(active_stream, stream).await;
+    });
 
     // read from client, write to socket
-    tokio::spawn(
-        async move {
-            tunnel_to_stream(host, stream_id, sink, queue_rx).await;
-        }
-    );
+    tokio::spawn(async move {
+        tunnel_to_stream(host, stream_id, sink, queue_rx).await;
+    });
 }
 
 fn validate_host_prefix(host: &str) -> Option<String> {

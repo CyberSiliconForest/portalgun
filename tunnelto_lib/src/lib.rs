@@ -1,3 +1,6 @@
+use std::str::from_boxed_utf8_unchecked;
+
+use base64::Engine;
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
@@ -8,18 +11,18 @@ pub struct SecretKey(pub String);
 impl SecretKey {
     pub fn generate() -> Self {
         let mut rng = rand::thread_rng();
-        Self(
-            std::iter::repeat(())
-                .map(|_| rng.sample(rand::distributions::Alphanumeric))
-                .take(22)
-                .collect::<String>(),
-        )
+        let binstr = std::iter::repeat(())
+            .map(|_| rng.sample(rand::distributions::Alphanumeric))
+            .take(22)
+            .collect::<Vec<u8>>();
+        Self(String::from_utf8(binstr).unwrap())
     }
 
     pub fn client_id(&self) -> ClientId {
-        ClientId(base64::encode(
-            &sha2::Sha256::digest(self.0.as_bytes()).to_vec(),
-        ))
+        ClientId(
+            base64::engine::general_purpose::STANDARD
+                .encode(&sha2::Sha256::digest(self.0.as_bytes()).to_vec()),
+        )
     }
 }
 
@@ -45,11 +48,12 @@ impl ServerHello {
     #[allow(unused)]
     pub fn random_domain() -> String {
         let mut rng = rand::thread_rng();
-        std::iter::repeat(())
+        let binstr = std::iter::repeat(())
             .map(|_| rng.sample(rand::distributions::Alphanumeric))
             .take(8)
-            .collect::<String>()
-            .to_lowercase()
+            .collect::<Vec<u8>>();
+
+        String::from_utf8(binstr).unwrap().to_lowercase()
     }
 
     #[allow(unused)]
@@ -106,13 +110,14 @@ impl ClientId {
     pub fn generate() -> Self {
         let mut id = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut id);
-        ClientId(base64::encode_config(&id, base64::URL_SAFE_NO_PAD))
+        ClientId(base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&id))
     }
 
     pub fn safe_id(self) -> ClientId {
-        ClientId(base64::encode(
-            &sha2::Sha256::digest(self.0.as_bytes()).to_vec(),
-        ))
+        ClientId(
+            base64::engine::general_purpose::STANDARD
+                .encode(&sha2::Sha256::digest(self.0.as_bytes()).to_vec()),
+        )
     }
 }
 
@@ -129,7 +134,7 @@ impl StreamId {
     pub fn to_string(&self) -> String {
         format!(
             "stream_{}",
-            base64::encode_config(&self.0, base64::URL_SAFE_NO_PAD)
+            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&self.0)
         )
     }
 }

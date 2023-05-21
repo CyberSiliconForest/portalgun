@@ -1,4 +1,5 @@
 use crate::auth::{SigKey, Signature};
+use base64::Engine;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -30,12 +31,12 @@ impl ReconnectTokenPayload {
         let payload = serde_json::to_string(&self)?;
         let sig = key.sign(payload.as_bytes());
         let tok = ReconnectTokenInner { payload, sig };
-        let tok = base64::encode(&serde_json::to_vec(&tok)?);
+        let tok = base64::engine::general_purpose::STANDARD.encode(&serde_json::to_vec(&tok)?);
         Ok(ReconnectToken(tok))
     }
 
     pub fn verify(tok: ReconnectToken, key: &SigKey) -> Result<ReconnectTokenPayload, Error> {
-        let tok = base64::decode(tok.0.as_str())?;
+        let tok = base64::engine::general_purpose::STANDARD.decode(tok.0.as_str())?;
         let tok: ReconnectTokenInner = serde_json::from_slice(&tok)?;
 
         if !key.verify(tok.payload.as_bytes(), &tok.sig) {

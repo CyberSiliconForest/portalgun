@@ -15,9 +15,7 @@ pub fn spawn<A: Into<SocketAddr>>(addr: A) {
     });
     let client_conn = warp::path("wormhole").and(client_ip()).and(warp::ws()).map(
         move |client_ip: IpAddr, ws: Ws| {
-            ws.on_upgrade(move |w| {
-                async move { handle_new_connection(client_ip, w).await }
-            })
+            ws.on_upgrade(move |w| async move { handle_new_connection(client_ip, w).await })
         },
     );
 
@@ -83,53 +81,47 @@ async fn handle_new_connection(client_ip: IpAddr, websocket: WebSocket) {
 
     let client_clone = client.clone();
 
-    tokio::spawn(
-        async move {
-            tunnel_client(client_clone, sink, rx).await;
-        }
-    );
+    tokio::spawn(async move {
+        tunnel_client(client_clone, sink, rx).await;
+    });
 
     let client_clone = client.clone();
 
-    tokio::spawn(
-        async move {
-            process_client_messages(client_clone, stream).await;
-        }
-    );
+    tokio::spawn(async move {
+        process_client_messages(client_clone, stream).await;
+    });
 
     // play ping pong
-    tokio::spawn(
-        async move {
-            loop {
-                tracing::trace!("sending ping");
+    tokio::spawn(async move {
+        loop {
+            tracing::trace!("sending ping");
 
-                // create a new reconnect token for anonymous clients
-                let reconnect_token = if client.is_anonymous {
-                    ReconnectTokenPayload {
-                        sub_domain: client.host.clone(),
-                        client_id: client.id.clone(),
-                        expires: Utc::now() + chrono::Duration::minutes(2),
-                    }
-                    .into_token(&CONFIG.master_sig_key)
-                    .map_err(|e| error!("unable to create reconnect token: {:?}", e))
-                    .ok()
-                } else {
-                    None
-                };
+            // create a new reconnect token for anonymous clients
+            let reconnect_token = if client.is_anonymous {
+                ReconnectTokenPayload {
+                    sub_domain: client.host.clone(),
+                    client_id: client.id.clone(),
+                    expires: Utc::now() + chrono::Duration::minutes(2),
+                }
+                .into_token(&CONFIG.master_sig_key)
+                .map_err(|e| error!("unable to create reconnect token: {:?}", e))
+                .ok()
+            } else {
+                None
+            };
 
-                match client.tx.send(ControlPacket::Ping(reconnect_token)).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        tracing::debug!("Failed to send ping: {:?}, removing client", e);
-                        Connections::remove(&client);
-                        return;
-                    }
-                };
+            match client.tx.send(ControlPacket::Ping(reconnect_token)).await {
+                Ok(_) => {}
+                Err(e) => {
+                    tracing::debug!("Failed to send ping: {:?}, removing client", e);
+                    Connections::remove(&client);
+                    return;
+                }
+            };
 
-                tokio::time::sleep(Duration::new(PING_INTERVAL, 0)).await;
-            }
+            tokio::time::sleep(Duration::new(PING_INTERVAL, 0)).await;
         }
-    );
+    });
 }
 
 #[tracing::instrument(skip(websocket))]
