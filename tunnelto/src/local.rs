@@ -22,7 +22,7 @@ pub async fn setup_new_stream(
     mut tunnel_tx: UnboundedSender<ControlPacket>,
     stream_id: StreamId,
 ) -> Option<UnboundedSender<StreamMessage>> {
-    info!("setting up local stream: {}", &stream_id.to_string());
+    info!("setting up local stream: {} -> {}", &stream_id.to_string(), &config.local_addr);
 
     let local_tcp = match TcpStream::connect(config.local_addr).await {
         Ok(s) => s,
