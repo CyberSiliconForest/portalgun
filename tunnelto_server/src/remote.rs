@@ -3,7 +3,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::io::{ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tracing::debug;
-use tracing::{error};
+use tracing::error;
 
 async fn direct_to_control(mut incoming: TcpStream) {
     let mut control_socket =

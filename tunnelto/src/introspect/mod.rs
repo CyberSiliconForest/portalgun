@@ -220,11 +220,7 @@ enum DataType {
 }
 
 async fn inspector() -> Result<Page<Inspector>, warp::reject::Rejection> {
-    let mut requests: Vec<Request> = REQUESTS
-        .read()
-        .unwrap()
-        .values().cloned()
-        .collect();
+    let mut requests: Vec<Request> = REQUESTS.read().unwrap().values().cloned().collect();
     requests.sort_by(|a, b| b.completed.cmp(&a.completed));
     let inspect = Inspector { requests };
     Ok(Page(inspect))

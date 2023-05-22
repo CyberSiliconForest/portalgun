@@ -298,9 +298,11 @@ async fn process_control_flow_message(
                 data.len()
             );
 
-            if !ACTIVE_STREAMS.read().unwrap().contains_key(stream_id) && local::setup_new_stream(config.clone(), tunnel_tx.clone(), stream_id.clone())
+            if !ACTIVE_STREAMS.read().unwrap().contains_key(stream_id)
+                && local::setup_new_stream(config.clone(), tunnel_tx.clone(), stream_id.clone())
                     .await
-                    .is_none() {
+                    .is_none()
+            {
                 error!("failed to open local tunnel")
             }
 

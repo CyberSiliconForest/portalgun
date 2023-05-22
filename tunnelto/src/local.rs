@@ -10,7 +10,6 @@ use tokio::net::TcpStream;
 use tokio_rustls::rustls::{ClientConfig, OwnedTrustAnchor, RootCertStore, ServerName};
 use tokio_rustls::TlsConnector;
 
-
 use crate::introspect::{self, introspect_stream, IntrospectChannels};
 
 pub trait AnyTcpStream: AsyncRead + AsyncWrite + Unpin + Send {}
@@ -22,7 +21,11 @@ pub async fn setup_new_stream(
     mut tunnel_tx: UnboundedSender<ControlPacket>,
     stream_id: StreamId,
 ) -> Option<UnboundedSender<StreamMessage>> {
-    info!("setting up local stream: {} -> {}", &stream_id.to_string(), &config.local_addr);
+    info!(
+        "setting up local stream: {} -> {}",
+        &stream_id.to_string(),
+        &config.local_addr
+    );
 
     let local_tcp = match TcpStream::connect(config.local_addr).await {
         Ok(s) => s,
