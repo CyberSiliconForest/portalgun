@@ -1,7 +1,7 @@
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use super::*;
-use structopt::StructOpt;
+use clap::{Parser, Subcommand};
 
 const HOST_ENV: &str = "CTRL_HOST";
 const PORT_ENV: &str = "CTRL_PORT";
@@ -15,51 +15,49 @@ const SETTINGS_DIR: &str = ".tunnelto";
 const SECRET_KEY_FILE: &str = "key.token";
 
 /// Command line arguments
-#[derive(Debug, StructOpt)]
-#[structopt(
-    name = "tunnelto",
-    author = "support@tunnelto.dev",
-    about = "Expose your local web server to the internet with a public url."
-)]
+#[derive(Debug, Parser)]
+#[command(name = "tunnelto")]
+#[command(author = "TunnelTo <support@tunnelto.dev>")]
+#[command(about = "Expose your local web server to the internet with a public url.", long_about = None)]
 struct Opts {
     /// A level of verbosity, and can be used multiple times
-    #[structopt(short = "v", long = "verbose")]
+    #[clap(long, short = 'v')]
     verbose: bool,
 
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: Option<SubCommand>,
 
     /// Sets an API authentication key to use for this tunnel
-    #[structopt(short = "k", long = "key")]
+    #[clap(long, short = 'k')]
     key: Option<String>,
 
     /// Specify a sub-domain for this tunnel
-    #[structopt(short = "s", long = "subdomain")]
+    #[clap(long, short = 's')]
     sub_domain: Option<String>,
 
     /// Sets the HOST (i.e. localhost) to forward incoming tunnel traffic to
-    #[structopt(long = "host", default_value = "localhost")]
+    #[clap(long = "host", default_value = "localhost")]
     local_host: String,
 
     /// Sets the protocol for local forwarding (i.e. https://localhost) to forward incoming tunnel traffic to
-    #[structopt(long = "use-tls", short = "t")]
+    #[clap(long = "use-tls", short = 't')]
     use_tls: bool,
 
     /// Sets the port to forward incoming tunnel traffic to on the target host
-    #[structopt(short = "p", long = "port", default_value = "8000")]
+    #[clap(long = "port", default_value = "8000")]
     port: u16,
 
     /// Sets the address of the local introspection dashboard
-    #[structopt(long = "dashboard-port")]
+    #[clap(long = "dashboard-port")]
     dashboard_port: Option<u16>,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 enum SubCommand {
     /// Store the API Authentication key
     SetAuth {
         /// Sets an API authentication key on disk for future use
-        #[structopt(short = "k", long = "key")]
+        #[clap(short = 'k', long = "key")]
         key: String,
     },
 }
@@ -86,7 +84,7 @@ impl Config {
     /// Parse the URL to use to connect to the wormhole control server
     pub fn get() -> Result<Config, ()> {
         // parse the opts
-        let opts: Opts = Opts::from_args();
+        let opts: Opts = Opts::parse();
 
         if opts.verbose {
             std::env::set_var("RUST_LOG", "tunnelto=debug");
