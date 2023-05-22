@@ -27,7 +27,7 @@ pub struct ReconnectTokenPayload {
     pub expires: DateTime<Utc>,
 }
 impl ReconnectTokenPayload {
-    pub fn into_token(&self, key: &SigKey) -> Result<ReconnectToken, Error> {
+    pub fn into_token(self, key: &SigKey) -> Result<ReconnectToken, Error> {
         let payload = serde_json::to_string(&self)?;
         let sig = key.sign(payload.as_bytes());
         let tok = ReconnectTokenInner { payload, sig };

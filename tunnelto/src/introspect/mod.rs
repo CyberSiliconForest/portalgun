@@ -250,12 +250,9 @@ fn get_body_data(input: &[u8]) -> BodyData {
             .unwrap_or("No UTF-8 Data".to_string()),
     };
 
-    match serde_json::from_slice::<serde_json::Value>(input) {
-        Ok(v) => {
-            body.data_type = DataType::Json;
-            body.content = serde_json::to_string(&v).ok();
-        }
-        _ => {}
+    if let Ok(v) = serde_json::from_slice::<serde_json::Value>(input) {
+        body.data_type = DataType::Json;
+        body.content = serde_json::to_string(&v).ok();
     }
 
     body
