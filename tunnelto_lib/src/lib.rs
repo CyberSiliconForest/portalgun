@@ -128,8 +128,10 @@ impl StreamId {
         rand::thread_rng().fill_bytes(&mut id);
         StreamId(id)
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl ToString for StreamId {
+    fn to_string(&self) -> String {
         format!(
             "stream_{}",
             base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(self.0)
