@@ -2,7 +2,7 @@ use crate::auth::reconnect_token::ReconnectTokenPayload;
 use crate::auth::{AuthResult, AuthService};
 use crate::{ReconnectToken, CONFIG};
 use futures::{SinkExt, StreamExt};
-use tracing::error;
+use tracing::{error, info};
 use tunnelto_lib::{ClientHello, ClientId, ClientType, ServerHello};
 use warp::filters::ws::{Message, WebSocket};
 
@@ -42,6 +42,8 @@ async fn auth_client(
             return None;
         }
     };
+
+    info!(?client_hello, "got client hello");
 
     let (auth_key, client_id, requested_sub_domain) = match client_hello.client_type {
         ClientType::Anonymous => {
@@ -89,6 +91,7 @@ async fn auth_client(
                 (key, client_id, sub_domain)
             }
             None => {
+                info!(?key, "Using key: ");
                 if let Some(token) = client_hello.reconnect_token {
                     return handle_reconnect_token(token, websocket).await;
                 } else {
