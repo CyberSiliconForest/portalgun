@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fmt::Formatter;
 
-pub mod auth_token;
+pub mod auth_oidc;
 pub mod client_auth;
 pub mod reconnect_token;
 

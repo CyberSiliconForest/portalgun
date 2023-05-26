@@ -43,8 +43,11 @@ pub struct Config {
     /// The host on which we create tunnels on
     pub tunnel_host: String,
 
-    /// Temporal solution: preshared environment token
-    pub env_token: String,
+    /// OIDC Discovery URL for token validation
+    pub oidc_discovery_url: String,
+
+    /// OIDC client id
+    pub oidc_client_id: String,
 }
 
 impl Config {
@@ -80,7 +83,10 @@ impl Config {
 
         let tunnel_host = std::env::var("TUNNEL_HOST").unwrap_or("tunnelto.dev".to_string());
 
-        let env_token = std::env::var("TUNNELTO_TOKEN").expect("TUNNELTO_TOKEN is required");
+        let oidc_discovery_url =
+            std::env::var("OIDC_DISCOVERY").expect("OIDC_DISCOVERY is required");
+
+        let oidc_client_id = std::env::var("OIDC_CLIENT_ID").expect("OIDC_CLIENT_ID is required");
 
         Config {
             allowed_hosts,
@@ -93,7 +99,8 @@ impl Config {
             instance_id,
             blocked_ips,
             tunnel_host,
-            env_token,
+            oidc_discovery_url,
+            oidc_client_id,
         }
     }
 }

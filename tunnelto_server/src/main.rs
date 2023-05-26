@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 use futures::{SinkExt, StreamExt};
+use tokio::sync::RwLock;
 use warp::ws::{Message, WebSocket, Ws};
 use warp::Filter;
 
@@ -23,10 +24,10 @@ mod active_stream;
 use self::active_stream::*;
 
 mod auth;
-pub use self::auth::auth_token;
+pub use self::auth::auth_oidc;
 pub use self::auth::client_auth;
 
-pub use self::auth_token::AuthTokenService;
+pub use self::auth_oidc::AuthOidcService;
 
 mod control_server;
 mod remote;
@@ -41,8 +42,10 @@ lazy_static! {
     pub static ref CONNECTIONS: Connections = Connections::new();
     pub static ref ACTIVE_STREAMS: ActiveStreams = Arc::new(DashMap::new());
     pub static ref CONFIG: Config = Config::from_env();
-    pub static ref AUTH_DB_SERVICE: AuthTokenService =
-        AuthTokenService::new(&CONFIG.env_token).expect("failed to init auth-service");
+    pub static ref AUTH_DB_SERVICE: RwLock<AuthOidcService> = RwLock::new(AuthOidcService::new(
+        &CONFIG.oidc_discovery_url,
+        &CONFIG.oidc_client_id,
+    ));
 
     // To disable all authentication:
     // pub static ref AUTH_DB_SERVICE: crate::auth::NoAuth = crate::auth::NoAuth;
@@ -51,6 +54,9 @@ lazy_static! {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
+
+    // Initialize AUTH_DB_SERVICE
+    AUTH_DB_SERVICE.write().await.init().await.unwrap();
 
     tracing::info!("starting server!");
 

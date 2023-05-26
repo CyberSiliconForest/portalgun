@@ -112,6 +112,8 @@ async fn auth_client(
 
     // next authenticate the sub-domain
     let sub_domain = match crate::AUTH_DB_SERVICE
+        .read()
+        .await
         .auth_sub_domain(&auth_key.0, &requested_sub_domain)
         .await
     {
@@ -132,6 +134,7 @@ async fn auth_client(
         }
         Err(error) => {
             error!(?error, "error auth-ing user");
+            tracing::error!(?error, "error auth-ing user");
             let data = serde_json::to_vec(&ServerHello::AuthFailed).unwrap_or_default();
             let _ = websocket.send(Message::binary(data)).await;
             return None;

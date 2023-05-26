@@ -32,4 +32,10 @@ pub enum Error {
 
     #[error("The server timed out sending us something.")]
     Timeout,
+
+    #[error("Reqwest error: {0}")]
+    ReqwestError(#[from] reqwest::Error),
+
+    #[error("OAuth2 Authentication error: {0}")]
+    OAuth2(String),
 }

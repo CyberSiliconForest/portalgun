@@ -7,6 +7,9 @@ use std::net::{SocketAddr, ToSocketAddrs};
 
 use super::*;
 use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
+
+use crate::openid2::{authorize, fetch_token};
 
 const HOST_ENV: &str = "CTRL_HOST";
 const PORT_ENV: &str = "CTRL_PORT";
@@ -16,13 +19,13 @@ const DEFAULT_HOST: &str = "tunnelto.dev";
 const DEFAULT_CONTROL_HOST: &str = "wormhole.tunnelto.dev";
 const DEFAULT_CONTROL_PORT: &str = "10001";
 
-const SETTINGS_DIR: &str = ".tunnelto";
-const SECRET_KEY_FILE: &str = "key.token";
+const SETTINGS_DIR: &str = ".portalgun";
+const SECRET_KEY_FILE: &str = "auth.json";
 
 /// Command line arguments
 #[derive(Debug, Parser)]
-#[command(name = "tunnelto")]
-#[command(author = "TunnelTo <support@tunnelto.dev>")]
+#[command(name = "portalgun")]
+#[command(author = "perillamint, tunnelto")]
 #[command(about = "Expose your local web server to the internet with a public url.", long_about = None)]
 struct Opts {
     /// A level of verbosity, and can be used multiple times
@@ -31,10 +34,6 @@ struct Opts {
 
     #[command(subcommand)]
     command: Option<SubCommand>,
-
-    /// Sets an API authentication key to use for this tunnel
-    #[clap(long, short = 'k')]
-    key: Option<String>,
 
     /// Specify a sub-domain for this tunnel
     #[clap(long, short = 's')]
@@ -67,6 +66,9 @@ enum SubCommand {
         /// OpenID Client ID to use for authentication
         #[clap(long = "client-id")]
         client_id: String,
+        /// OpenID scopes. separated in comma
+        #[clap(long = "scopes", default_value = "openid,portalgun")]
+        scopes: String,
         /// Corresponding tunnel server
         #[clap(long = "control-host")]
         control_host: String,
@@ -91,9 +93,17 @@ pub struct Config {
     pub verbose: bool,
 }
 
+/// Auth storage
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AuthStorage {
+    oidc: String,
+    client_id: String,
+    refresh_token: String,
+}
+
 impl Config {
     /// Parse the URL to use to connect to the wormhole control server
-    pub fn get() -> Result<Config, ()> {
+    pub async fn get() -> Result<Config, ()> {
         // parse the opts
         let opts: Opts = Opts::parse();
 
@@ -104,45 +114,70 @@ impl Config {
         pretty_env_logger::init();
 
         let (secret_key, sub_domain) = match opts.command {
-            Some(SubCommand::Login{oidc, client_id, control_host}) => {
-                //let key = opts.key.unwrap_or(key);
-                //let settings_dir = match dirs::home_dir().map(|h| h.join(SETTINGS_DIR)) {
-                //    Some(path) => path,
-                //    None => {
-                //        panic!("Could not find home directory to store token.")
-                //    }
-                //};
-                //std::fs::create_dir_all(&settings_dir)
-                //    .expect("Fail to create file in home directory");
-                //std::fs::write(settings_dir.join(SECRET_KEY_FILE), key)
-                //    .expect("Failed to save authentication key file.");
+            Some(SubCommand::Login {
+                oidc,
+                client_id,
+                scopes,
+                control_host,
+            }) => {
+                let scope_vec: Vec<String> = scopes.split(',').map(|str| str.to_owned()).collect();
+                let refresh = authorize(&oidc, &client_id, scope_vec).await.unwrap();
 
-                //eprintln!("Authentication key stored successfully!");
+                let auth_storage = AuthStorage {
+                    oidc,
+                    client_id,
+                    refresh_token: refresh,
+                };
+
+                let auth_json =
+                    serde_json::to_string(&auth_storage).expect("Failed to serialize credential.");
+
+                let settings_dir = match dirs::home_dir().map(|h| h.join(SETTINGS_DIR)) {
+                    Some(path) => path,
+                    None => {
+                        panic!("Could not find home directory to store token.")
+                    }
+                };
+                std::fs::create_dir_all(&settings_dir)
+                    .expect("Fail to create file in home directory");
+                std::fs::write(settings_dir.join(SECRET_KEY_FILE), auth_json)
+                    .expect("Failed to store credential.");
+
+                eprintln!("Authentication key stored successfully!");
                 std::process::exit(0);
             }
             None => {
-                let key = opts.key;
-                let sub_domain = opts.sub_domain;
-                (
-                    match key {
-                        Some(key) => Some(key),
-                        None => dirs::home_dir()
-                            .map(|h| h.join(SETTINGS_DIR).join(SECRET_KEY_FILE))
-                            .map(|path| {
-                                if path.exists() {
-                                    std::fs::read_to_string(path)
-                                        .map_err(|e| {
-                                            error!("Error reading authentication token: {:?}", e)
-                                        })
-                                        .ok()
-                                } else {
-                                    None
-                                }
-                            })
-                            .unwrap_or(None),
-                    },
-                    sub_domain,
+                let auth_file = dirs::home_dir()
+                    .map(|h| h.join(SETTINGS_DIR).join(SECRET_KEY_FILE))
+                    .expect("Failed to access home directory.");
+                let auth_json = if auth_file.exists() {
+                    std::fs::read_to_string(auth_file.clone())
+                        .map_err(|e| error!("Error reading credential: {:?}", e))
+                        .unwrap()
+                } else {
+                    eprintln!("Credential file not found. Please login first.");
+                    std::process::exit(1);
+                };
+
+                let mut credential: AuthStorage =
+                    serde_json::from_str(&auth_json).expect("Failed to deserialize credential.");
+
+                let (access_token, refresh_token) = fetch_token(
+                    &credential.oidc,
+                    &credential.client_id,
+                    &credential.refresh_token,
                 )
+                .await
+                .expect("Failed to refresh session.");
+
+                if let Some(refresh) = refresh_token {
+                    credential.refresh_token = refresh;
+                    let json = serde_json::to_string(&credential)
+                        .expect("Failed to serialize credential.");
+                    std::fs::write(auth_file, json).expect("Failed to store credential.");
+                }
+
+                (access_token, opts.sub_domain)
             }
         };
 
@@ -186,7 +221,7 @@ impl Config {
             sub_domain,
             dashboard_port: opts.dashboard_port.unwrap_or(0),
             verbose: opts.verbose,
-            secret_key: secret_key.map(SecretKey),
+            secret_key: Some(secret_key).map(SecretKey),
             control_tls_off: tls_off,
             first_run: true,
         })
