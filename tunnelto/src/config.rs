@@ -8,16 +8,11 @@ use std::net::{SocketAddr, ToSocketAddrs};
 use super::*;
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::openid2::{authorize, fetch_token};
 
-const HOST_ENV: &str = "CTRL_HOST";
-const PORT_ENV: &str = "CTRL_PORT";
-const TLS_OFF_ENV: &str = "CTRL_TLS_OFF";
-
-const DEFAULT_HOST: &str = "tunnelto.dev";
-const DEFAULT_CONTROL_HOST: &str = "wormhole.tunnelto.dev";
-const DEFAULT_CONTROL_PORT: &str = "10001";
+const CTRL_URL_ENV: &str = "CTRL_URL";
 
 const SETTINGS_DIR: &str = ".portalgun";
 const SECRET_KEY_FILE: &str = "auth.json";
@@ -79,15 +74,13 @@ enum SubCommand {
 #[derive(Debug, Clone)]
 pub struct Config {
     pub client_id: ClientId,
-    pub control_url: String,
+    pub control_url: Url,
     pub use_tls: bool,
-    pub host: String,
     pub local_host: String,
     pub local_port: u16,
     pub local_addr: SocketAddr,
     pub sub_domain: Option<String>,
     pub secret_key: Option<SecretKey>,
-    pub control_tls_off: bool,
     pub first_run: bool,
     pub dashboard_port: u16,
     pub verbose: bool,
@@ -197,16 +190,10 @@ impl Config {
             }
         };
 
-        // get the host url
-        let tls_off = env::var(TLS_OFF_ENV).is_ok();
-        let host = env::var(HOST_ENV).unwrap_or(DEFAULT_HOST.to_string());
-
-        let control_host = env::var(HOST_ENV).unwrap_or(DEFAULT_CONTROL_HOST.to_string());
-
-        let port = env::var(PORT_ENV).unwrap_or(DEFAULT_CONTROL_PORT.to_string());
-
-        let scheme = if tls_off { "ws" } else { "wss" };
-        let control_url = format!("{}://{}:{}/wormhole", scheme, control_host, port);
+        let control_url: Url = env::var(CTRL_URL_ENV)
+            .map(|url| Url::parse(&url).expect("Failed to parse control url."))
+            .expect("Control URL not set.")
+            .join("wormhole").unwrap();
 
         info!("Control Server URL: {}", &control_url);
 
@@ -215,14 +202,12 @@ impl Config {
             local_host: opts.local_host,
             use_tls: opts.use_tls,
             control_url,
-            host,
             local_port: opts.port,
             local_addr,
             sub_domain,
             dashboard_port: opts.dashboard_port.unwrap_or(0),
             verbose: opts.verbose,
             secret_key: Some(secret_key).map(SecretKey),
-            control_tls_off: tls_off,
             first_run: true,
         })
     }
@@ -230,7 +215,7 @@ impl Config {
     pub fn activation_url(&self, full_hostname: &str) -> String {
         format!(
             "{}://{}",
-            if self.control_tls_off {
+            if self.control_url.scheme() == "ws" {
                 "http"
             } else {
                 "https"
