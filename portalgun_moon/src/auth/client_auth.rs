@@ -8,7 +8,7 @@ use crate::auth::{AuthResult, AuthService};
 use crate::{ReconnectToken, CONFIG};
 use futures::{SinkExt, StreamExt};
 use tracing::{error, info};
-use tunnelto_lib::{ClientHello, ClientId, ClientType, ServerHello};
+use portalgun_lib::{ClientHello, ClientId, ClientType, ServerHello};
 use warp::filters::ws::{Message, WebSocket};
 
 pub struct ClientHandshake {

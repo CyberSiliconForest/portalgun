@@ -4,21 +4,21 @@
 # SPDX-License-Identifier: MIT
 
 [package]
-name = "tunnelto_server"
+name = "portalgun_moon"
 description = "expose your local web server to the internet with a public url"
 version = "0.1.10"
 authors = ["Alex Grinman <alex@tunnelto.dev>", "perillamint <perillamint@silicon.moe>"]
 edition = "2021"
 license = "MIT"
-repository = "https://tunnelto.dev"
+repository = "https://github.com/perillamint/portalgun"
 readme = "../README.md"
 
 [[bin]]
-name = "tunnelto_server"
+name = "portalgun_moon"
 path = "src/main.rs"
 
 [dependencies]
-tunnelto_lib = { path = "../tunnelto_lib" }
+portalgun_lib = { path = "../portalgun_lib" }
 anyhow = "1.0"
 warp = "0.3"
 tokio = { version = "1.28", features = ["full"] }

@@ -7,16 +7,16 @@ FROM rust:alpine as builder
 
 RUN apk add --no-cache openssl openssl-dev musl-dev
 
-WORKDIR /tunnelto
+WORKDIR /portalgun
 COPY . .
 
-RUN cargo build --release --bin tunnelto_server
+RUN cargo build --release --bin portalgun_moon
 
 FROM alpine:latest 
 
 RUN apk add --no-cache openssl
 
-COPY --from=builder /tunnelto/target/release/tunnelto_server /tunnelto_server
+COPY --from=builder /portalgun/target/release/portalgun_moon /portalgun_moon
 
 # client svc
 EXPOSE 8080
@@ -25,4 +25,4 @@ EXPOSE 5000
 # net svc
 EXPOSE 10002
 
-ENTRYPOINT ["/tunnelto_server"]
+ENTRYPOINT ["/portalgun_moon"]

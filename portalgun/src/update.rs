@@ -13,7 +13,7 @@ pub struct Update {
     pub name: String,
 }
 
-const UPDATE_URL: &str = "https://api.github.com/repos/agrinman/tunnelto/releases/latest";
+const UPDATE_URL: &str = "https://api.github.com/repos/perillamint/portalgun/releases/latest";
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub async fn check() {
@@ -36,7 +36,7 @@ pub async fn check() {
 async fn check_inner() -> Result<Option<Update>, Box<dyn std::error::Error>> {
     let update: Update = reqwest::Client::new()
         .get(UPDATE_URL)
-        .header("User-Agent", "tunnelto-client")
+        .header("User-Agent", "portalgun")
         .header("Accept", "application/vnd.github.v3+json")
         .send()
         .await?

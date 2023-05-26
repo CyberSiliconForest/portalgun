@@ -10,7 +10,7 @@ use warp::Filter;
 
 use dashmap::DashMap;
 use std::sync::Arc;
-pub use tunnelto_lib::*;
+pub use portalgun_lib::*;
 
 use tokio::net::TcpListener;
 
@@ -61,7 +61,7 @@ async fn main() {
     tracing::info!("starting server!");
 
     control_server::spawn(([0, 0, 0, 0], CONFIG.control_port));
-    info!("started tunnelto server on 0.0.0.0:{}", CONFIG.control_port);
+    info!("started portalgun server (moon) on 0.0.0.0:{}", CONFIG.control_port);
 
     network::spawn(([0, 0, 0, 0, 0, 0, 0, 0], CONFIG.internal_network_port));
     info!(

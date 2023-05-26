@@ -32,10 +32,10 @@ impl CliInterface {
         {
             if self.config.secret_key.is_some() {
                 Some(format!("{}",
-                          "To use custom sub-domains feature, please upgrade your billing plan at https://dashboard.tunnelto.dev.".yellow()))
+                          "To use custom sub-domains feature, please ask to your instance admin.".yellow()))
             } else {
                 Some(format!("{}",
-                          "To access the sub-domain feature, get your authentication key at https://dashboard.tunnelto.dev.".yellow()))
+                          "To access the sub-domain feature, please log in to the instance.".yellow()))
             }
         } else {
             None

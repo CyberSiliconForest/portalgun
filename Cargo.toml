@@ -5,13 +5,13 @@
 [workspace]
 
 members = [
-    "tunnelto_lib",
-    "tunnelto",
-    "tunnelto_server",
+    "portalgun_lib",
+    "portalgun",
+    "portalgun_moon",
 ]
 
 exclude = [
-    "tunnelto_proxy"
+    "portalgun_proxy"
 ]
 
 [profile.dev]

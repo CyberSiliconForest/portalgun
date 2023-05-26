@@ -29,7 +29,7 @@ pub use self::error::*;
 mod openid2;
 
 pub use config::*;
-pub use tunnelto_lib::*;
+pub use portalgun_lib::*;
 
 use crate::cli_ui::CliInterface;
 use colored::Colorize;

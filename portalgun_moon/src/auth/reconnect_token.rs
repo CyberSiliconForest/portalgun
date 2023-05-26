@@ -8,7 +8,7 @@ use base64::Engine;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tunnelto_lib::{ClientId, ReconnectToken};
+use portalgun_lib::{ClientId, ReconnectToken};
 
 #[derive(Error, Debug)]
 pub enum Error {

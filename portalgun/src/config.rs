@@ -100,7 +100,7 @@ impl Config {
         let opts: Opts = Opts::parse();
 
         if opts.verbose {
-            std::env::set_var("RUST_LOG", "tunnelto=debug");
+            std::env::set_var("RUST_LOG", "portalgun=debug");
         }
 
         pretty_env_logger::init();
