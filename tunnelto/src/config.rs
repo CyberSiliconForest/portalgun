@@ -8,6 +8,8 @@ use std::net::{SocketAddr, ToSocketAddrs};
 use super::*;
 use clap::{Parser, Subcommand};
 
+use crate::openid2::authorize;
+
 const HOST_ENV: &str = "CTRL_HOST";
 const PORT_ENV: &str = "CTRL_PORT";
 const TLS_OFF_ENV: &str = "CTRL_TLS_OFF";
@@ -93,7 +95,7 @@ pub struct Config {
 
 impl Config {
     /// Parse the URL to use to connect to the wormhole control server
-    pub fn get() -> Result<Config, ()> {
+    pub async fn get() -> Result<Config, ()> {
         // parse the opts
         let opts: Opts = Opts::parse();
 
@@ -104,7 +106,12 @@ impl Config {
         pretty_env_logger::init();
 
         let (secret_key, sub_domain) = match opts.command {
-            Some(SubCommand::Login{oidc, client_id, control_host}) => {
+            Some(SubCommand::Login {
+                oidc,
+                client_id,
+                control_host,
+            }) => {
+                let refresh = authorize(&oidc, &client_id, vec![]).await.unwrap();
                 //let key = opts.key.unwrap_or(key);
                 //let settings_dir = match dirs::home_dir().map(|h| h.join(SETTINGS_DIR)) {
                 //    Some(path) => path,

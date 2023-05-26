@@ -52,7 +52,7 @@ pub enum StreamMessage {
 
 #[tokio::main]
 async fn main() {
-    let mut config = match Config::get() {
+    let mut config = match Config::get().await {
         Ok(config) => config,
         Err(_) => return,
     };
