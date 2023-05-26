@@ -56,7 +56,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Initialize AUTH_DB_SERVICE
-    AUTH_DB_SERVICE.write().await.init().await.unwrap();
+    AUTH_DB_SERVICE.write().await.init().await.expect("Failed to initialize auth service");
 
     tracing::info!("starting server!");
 

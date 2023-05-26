@@ -46,7 +46,7 @@ hyper = "0.14"
 hyper-rustls = "0.24"
 http-body = "0.4.5"
 serde_urlencoded = "0.7"
-reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls", "tokio-rustls"] }
 cli-table = "0.4"
 semver = "0.11"
 webpki-roots = "0.23"
