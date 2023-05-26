@@ -1,19 +1,9 @@
 <!--
+SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
 SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
 
 SPDX-License-Identifier: MIT
 -->
-
-<p align="center" >
-<img width="540px" src="https://repository-images.githubusercontent.com/249120770/7ea6d180-b4ba-11ea-96ab-6c3b987aac9d" align="center"/>
-</p>
-
-<p align="center">    
-  <!--<a href="https://github.com/perillamint/portalgun/actions?query=workflow%3A%22Build+and+Release%22"><img src="https://github.com/agrinman/wormhole/workflows/Build%20and%20Release/badge.svg" alt="BuildRelease"></a>
-  <a href="https://crates.io/crates/wormhole-tunnel"><img src="https://img.shields.io/crates/v/tunnelto" alt="crate"></a>
-  <a href="https://github.com/agrinman/tunnelto/packages/295195"><img src="https://img.shields.io/docker/v/agrinman/wormhole?label=Docker" alt="GitHub Docker Registry"></a> -->
-  <a href="https://social.silicon.moe/@perillamint"><img src="https://img.shields.io/mastodon/follow/109308591376282868?domain=https%3A%2F%2Fsocial.silicon.moe&style=social"></a>
-</p>
 
 # `portalgun`
 `portalgun` lets you expose your locally running web server via a public URL.
