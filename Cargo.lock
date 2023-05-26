@@ -1338,7 +1338,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "portalgun"
-version = "0.1.19"
+version = "0.2.0"
 dependencies = [
  "askama",
  "bytes",
@@ -1378,7 +1378,7 @@ dependencies = [
 
 [[package]]
 name = "portalgun_lib"
-version = "0.1.19"
+version = "0.2.0"
 dependencies = [
  "base64 0.21.2",
  "rand",
@@ -1389,7 +1389,7 @@ dependencies = [
 
 [[package]]
 name = "portalgun_moon"
-version = "0.1.10"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
