@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+#
+# SPDX-License-Identifier: MIT
+
+version: '3.4'
+
+services:
+  portalgun:
+    image: perillamint/portalgun_moon
+    build:
+      context: .
+    restart: unless-stopped
+    init: true
+    environment:
+      RUST_LOG: 'info'
+      ALLOWED_HOSTS: 'tunnel.example.com'
+      TUNNEL_HOST: 'tunnel.example.com'
+      OIDC_DISCOVERY: 'https://example.com/.well-known/openid-configuration'
+      OIDC_CLIENT_ID: 'openid-client-id-here'
+    ports:
+      - "8080:8080"
+      - "5000:5000"
