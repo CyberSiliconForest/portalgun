@@ -223,7 +223,7 @@ pub async fn get_auth_info(control_url: &str) -> Result<(String, String, Vec<Str
             oidc_scopes,
         } => Ok((oidc_client_id, oidc_discovery, oidc_scopes)),
         _ => {
-            return Err(Error::AuthenticationFailed);
+            Err(Error::AuthenticationFailed)
         }
     }
 }
