@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+//
+// SPDX-License-Identifier: MIT
+
 use async_trait::async_trait;
 
 use super::{AuthResult, AuthService};

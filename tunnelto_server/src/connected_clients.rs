@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 use super::*;
 use dashmap::DashMap;
 use std::fmt::Formatter;

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Alex Grinman <me@alexgr.in>
+#
+# SPDX-License-Identifier: MIT
+
 name: Check
 
 on:

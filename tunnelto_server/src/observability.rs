@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 use tracing::Span;
 use tracing_honeycomb::{register_dist_tracing_root, TraceId};
 // use warp::trace::Info;

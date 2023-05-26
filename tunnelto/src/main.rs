@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 use futures::channel::mpsc::{unbounded, UnboundedSender};
 use futures::{SinkExt, StreamExt};
 
@@ -20,6 +25,8 @@ mod introspect;
 mod local;
 mod update;
 pub use self::error::*;
+
+mod openid2;
 
 pub use config::*;
 pub use tunnelto_lib::*;

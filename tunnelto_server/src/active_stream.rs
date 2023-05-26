@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 #[derive(Debug, Clone)]
 pub struct ActiveStream {
     pub id: StreamId,

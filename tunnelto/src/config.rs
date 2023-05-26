@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use super::*;
@@ -54,11 +59,17 @@ struct Opts {
 
 #[derive(Debug, Subcommand)]
 enum SubCommand {
-    /// Store the API Authentication key
-    SetAuth {
-        /// Sets an API authentication key on disk for future use
-        #[clap(short = 'k', long = "key")]
-        key: String,
+    /// Login using OpenID Connect. This will store the authentication token on disk for future use.
+    Login {
+        /// OpenID Discovery URL to use for authentication
+        #[clap(long = "oidc")]
+        oidc: String,
+        /// OpenID Client ID to use for authentication
+        #[clap(long = "client-id")]
+        client_id: String,
+        /// Corresponding tunnel server
+        #[clap(long = "control-host")]
+        control_host: String,
     },
 }
 
@@ -93,20 +104,20 @@ impl Config {
         pretty_env_logger::init();
 
         let (secret_key, sub_domain) = match opts.command {
-            Some(SubCommand::SetAuth { key }) => {
-                let key = opts.key.unwrap_or(key);
-                let settings_dir = match dirs::home_dir().map(|h| h.join(SETTINGS_DIR)) {
-                    Some(path) => path,
-                    None => {
-                        panic!("Could not find home directory to store token.")
-                    }
-                };
-                std::fs::create_dir_all(&settings_dir)
-                    .expect("Fail to create file in home directory");
-                std::fs::write(settings_dir.join(SECRET_KEY_FILE), key)
-                    .expect("Failed to save authentication key file.");
+            Some(SubCommand::Login{oidc, client_id, control_host}) => {
+                //let key = opts.key.unwrap_or(key);
+                //let settings_dir = match dirs::home_dir().map(|h| h.join(SETTINGS_DIR)) {
+                //    Some(path) => path,
+                //    None => {
+                //        panic!("Could not find home directory to store token.")
+                //    }
+                //};
+                //std::fs::create_dir_all(&settings_dir)
+                //    .expect("Fail to create file in home directory");
+                //std::fs::write(settings_dir.join(SECRET_KEY_FILE), key)
+                //    .expect("Failed to save authentication key file.");
 
-                eprintln!("Authentication key stored successfully!");
+                //eprintln!("Authentication key stored successfully!");
                 std::process::exit(0);
             }
             None => {

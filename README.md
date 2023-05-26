@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+
+SPDX-License-Identifier: MIT
+-->
+
 <p align="center" >
 <img width="540px" src="https://repository-images.githubusercontent.com/249120770/7ea6d180-b4ba-11ea-96ab-6c3b987aac9d" align="center"/>
 </p>

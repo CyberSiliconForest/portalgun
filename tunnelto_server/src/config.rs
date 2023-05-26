@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+// SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
+//
+// SPDX-License-Identifier: MIT
+
 use crate::auth::SigKey;
 use std::net::IpAddr;
 use std::str::FromStr;

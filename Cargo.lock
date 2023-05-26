@@ -2268,6 +2268,7 @@ dependencies = [
  "tokio-tungstenite 0.19.0",
  "tungstenite 0.19.0",
  "tunnelto_lib",
+ "url",
  "uuid",
  "warp",
  "webpki-roots 0.23.0",
@@ -2377,6 +2378,7 @@ dependencies = [
  "form_urlencoded",
  "idna 0.3.0",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]
