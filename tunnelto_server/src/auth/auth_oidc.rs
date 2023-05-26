@@ -14,6 +14,7 @@ use super::{AuthResult, AuthService};
 
 #[derive(Debug, Clone, Deserialize)]
 struct OIDCJwksDiscovery {
+    pub issuer: String,
     pub jwks_uri: Url,
 }
 
@@ -38,14 +39,18 @@ struct TunnelClaims {
 #[derive(Debug, Clone)]
 pub struct AuthOidcService {
     oidc_discovery_url: String,
+    client_id: String,
     jwks: Option<JwkSet>,
+    issuer: Option<String>,
 }
 
 impl AuthOidcService {
-    pub fn new(oidc_discovery_url: &str) -> Self {
+    pub fn new(oidc_discovery_url: &str, client_id: &str) -> Self {
         Self {
             oidc_discovery_url: oidc_discovery_url.to_owned(),
+            client_id: client_id.to_owned(),
             jwks: None,
+            issuer: None,
         }
     }
 
@@ -55,6 +60,7 @@ impl AuthOidcService {
         let jwks: JwkSet = reqwest::get(discovery.jwks_uri).await?.json().await?;
 
         self.jwks = Some(jwks);
+        self.issuer = Some(discovery.issuer);
         Ok(())
     }
 }
@@ -79,6 +85,8 @@ impl AuthService for AuthOidcService {
             .find(&token_header.kid.ok_or_else(|| anyhow!("No KID!"))?)
             .ok_or_else(|| anyhow!("Key not found!"))?;
 
+        let issuer = self.issuer.as_ref().ok_or_else(|| anyhow!("No issuer!"))?;
+
         let key = match jwk.algorithm {
             AlgorithmParameters::RSA(ref rsa) => DecodingKey::from_rsa_components(&rsa.n, &rsa.e),
             _ => return Err(anyhow!("Unsupported algorithm",)),
@@ -86,6 +94,15 @@ impl AuthService for AuthOidcService {
 
         let validation = jsonwebtoken::Validation::new(token_header.alg);
         let decoded_token = jsonwebtoken::decode::<TokenPayload>(auth_key, &key, &validation)?;
+
+        // Check issuer.
+        if decoded_token.claims.iss != *issuer {
+            return Err(anyhow!("Invalid issuer!"));
+        }
+
+        if decoded_token.claims.aud != self.client_id {
+            return Err(anyhow!("Invalid audience!"));
+        }
 
         if decoded_token.claims.exp < chrono::Utc::now().timestamp() {
             return Err(anyhow!("Expired token!"));
