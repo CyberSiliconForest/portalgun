@@ -44,6 +44,11 @@ pub enum ServerHello {
     SubDomainInUse,
     InvalidSubDomain,
     AuthFailed,
+    AuthInfo {
+        oidc_client_id: String,
+        oidc_discovery: String,
+        oidc_scopes: Vec<String>,
+    },
     Error(String),
 }
 
@@ -98,6 +103,7 @@ impl ClientHello {
 pub enum ClientType {
     Auth { key: SecretKey },
     Anonymous,
+    AuthInfo,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]

@@ -31,11 +31,16 @@ impl CliInterface {
             && (self.config.sub_domain.as_deref() != Some(sub_domain))
         {
             if self.config.secret_key.is_some() {
-                Some(format!("{}",
-                          "To use custom sub-domains feature, please ask to your instance admin.".yellow()))
+                Some(format!(
+                    "{}",
+                    "To use custom sub-domains feature, please ask to your instance admin."
+                        .yellow()
+                ))
             } else {
-                Some(format!("{}",
-                          "To access the sub-domain feature, please log in to the instance.".yellow()))
+                Some(format!(
+                    "{}",
+                    "To access the sub-domain feature, please log in to the instance.".yellow()
+                ))
             }
         } else {
             None

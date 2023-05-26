@@ -9,8 +9,8 @@ use warp::ws::{Message, WebSocket, Ws};
 use warp::Filter;
 
 use dashmap::DashMap;
-use std::sync::Arc;
 pub use portalgun_lib::*;
+use std::sync::Arc;
 
 use tokio::net::TcpListener;
 
@@ -45,6 +45,7 @@ lazy_static! {
     pub static ref AUTH_DB_SERVICE: RwLock<AuthOidcService> = RwLock::new(AuthOidcService::new(
         &CONFIG.oidc_discovery_url,
         &CONFIG.oidc_client_id,
+        &CONFIG.oidc_scopes,
     ));
 
     // To disable all authentication:
@@ -56,12 +57,20 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Initialize AUTH_DB_SERVICE
-    AUTH_DB_SERVICE.write().await.init().await.expect("Failed to initialize auth service");
+    AUTH_DB_SERVICE
+        .write()
+        .await
+        .init()
+        .await
+        .expect("Failed to initialize auth service");
 
     tracing::info!("starting server!");
 
     control_server::spawn(([0, 0, 0, 0], CONFIG.control_port));
-    info!("started portalgun server (moon) on 0.0.0.0:{}", CONFIG.control_port);
+    info!(
+        "started portalgun server (moon) on 0.0.0.0:{}",
+        CONFIG.control_port
+    );
 
     network::spawn(([0, 0, 0, 0, 0, 0, 0, 0], CONFIG.internal_network_port));
     info!(

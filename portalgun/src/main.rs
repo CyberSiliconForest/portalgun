@@ -189,6 +189,45 @@ async fn run_wormhole(
     }
 }
 
+pub async fn get_auth_info(control_url: &str) -> Result<(String, String, Vec<String>), Error> {
+    let (mut websocket, _) = tokio_tungstenite::connect_async(control_url).await?;
+
+    // send our Client Hello message
+    let client_hello = ClientHello::generate(None, ClientType::AuthInfo);
+
+    info!("connecting to wormhole...");
+
+    let hello = serde_json::to_vec(&client_hello).unwrap();
+    websocket
+        .send(Message::binary(hello))
+        .await
+        .expect("Failed to send client hello to wormhole server.");
+
+    // wait for Server hello
+    let server_hello_data = websocket
+        .next()
+        .await
+        .ok_or(Error::NoResponseFromServer)??
+        .into_data();
+    let server_hello = serde_json::from_slice::<ServerHello>(&server_hello_data).map_err(|e| {
+        error!("Couldn't parse server_hello from {:?}", e);
+        Error::ServerReplyInvalid
+    })?;
+
+    websocket.close(None).await?;
+
+    match server_hello {
+        ServerHello::AuthInfo {
+            oidc_client_id,
+            oidc_discovery,
+            oidc_scopes,
+        } => Ok((oidc_client_id, oidc_discovery, oidc_scopes)),
+        _ => {
+            return Err(Error::AuthenticationFailed);
+        }
+    }
+}
+
 struct Wormhole {
     websocket: WebSocketStream<MaybeTlsStream<TcpStream>>,
     sub_domain: String,
@@ -250,6 +289,10 @@ async fn connect_to_wormhole(config: &Config) -> Result<Wormhole, Error> {
         }
         ServerHello::SubDomainInUse => {
             return Err(Error::SubDomainInUse);
+        }
+        ServerHello::AuthInfo { .. } => {
+            // Huh, how did we get here?
+            return Err(Error::MalformedMessageFromServer);
         }
         ServerHello::Error(error) => return Err(Error::ServerError(error)),
     };

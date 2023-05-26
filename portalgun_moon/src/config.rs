@@ -48,6 +48,9 @@ pub struct Config {
 
     /// OIDC client id
     pub oidc_client_id: String,
+
+    /// OIDC scopes
+    pub oidc_scopes: String,
 }
 
 impl Config {
@@ -88,6 +91,8 @@ impl Config {
 
         let oidc_client_id = std::env::var("OIDC_CLIENT_ID").expect("OIDC_CLIENT_ID is required");
 
+        let oidc_scopes = std::env::var("OIDC_SCOPES").unwrap_or("openid,portalgun".to_owned());
+
         Config {
             allowed_hosts,
             blocked_sub_domains,
@@ -101,6 +106,7 @@ impl Config {
             tunnel_host,
             oidc_discovery_url,
             oidc_client_id,
+            oidc_scopes,
         }
     }
 }

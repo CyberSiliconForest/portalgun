@@ -40,17 +40,19 @@ struct TunnelClaims {
 pub struct AuthOidcService {
     oidc_discovery_url: String,
     client_id: String,
+    scopes: Vec<String>,
     jwks: Option<JwkSet>,
     issuer: Option<String>,
 }
 
 impl AuthOidcService {
-    pub fn new(oidc_discovery_url: &str, client_id: &str) -> Self {
+    pub fn new(oidc_discovery_url: &str, client_id: &str, scopes: &str) -> Self {
         Self {
             oidc_discovery_url: oidc_discovery_url.to_owned(),
             client_id: client_id.to_owned(),
             jwks: None,
             issuer: None,
+            scopes: scopes.split(',').map(|str| str.to_owned()).collect(),
         }
     }
 
@@ -62,6 +64,14 @@ impl AuthOidcService {
         self.jwks = Some(jwks);
         self.issuer = Some(discovery.issuer);
         Ok(())
+    }
+
+    pub fn get_configuration(&self) -> (String, String, Vec<String>) {
+        (
+            self.oidc_discovery_url.clone(),
+            self.client_id.clone(),
+            self.scopes.clone(),
+        )
     }
 }
 

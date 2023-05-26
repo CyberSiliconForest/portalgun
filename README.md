@@ -63,10 +63,10 @@ Options:
 ## Testing Locally
 ```shell script
 # Run the Server: xpects TCP traffic on 8080 and control websockets on 5000
-ALLOWED_HOSTS="localhost" cargo run --bin portalgun_server
+ALLOWED_HOSTS='localhost' TUNNEL_HOST='localhost' OIDC_DISCOVERY='https://example.com/.well-known/openid-configuration' OIDC_CLIENT_ID='openid-client-id-here' OIDC_SCOPES='openid,portalgun' cargo run --bin portalgun_moon
 
-# Run a local portalgun client talking to your local portalgun_server
-CTRL_HOST="localhost" CTRL_PORT=5000 CTRL_TLS_OFF=1 cargo run --bin portalgun -- -p 8000
+# Logging in using OIDC
+cargo run --bin portalgun login --control-server ws://localhost:5000  
 
 # Test it out!
 # Remember 8080 is our local portalgun TCP server

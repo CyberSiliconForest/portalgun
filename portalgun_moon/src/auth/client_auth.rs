@@ -7,8 +7,8 @@ use crate::auth::reconnect_token::ReconnectTokenPayload;
 use crate::auth::{AuthResult, AuthService};
 use crate::{ReconnectToken, CONFIG};
 use futures::{SinkExt, StreamExt};
-use tracing::{error, info};
 use portalgun_lib::{ClientHello, ClientId, ClientType, ServerHello};
+use tracing::{error, info};
 use warp::filters::ws::{Message, WebSocket};
 
 pub struct ClientHandshake {
@@ -106,6 +106,19 @@ async fn auth_client(
                 }
             }
         },
+        ClientType::AuthInfo => {
+            // Send the auth information
+            let (discovery, client_id, scopes) =
+                crate::AUTH_DB_SERVICE.read().await.get_configuration();
+            let authinfo = ServerHello::AuthInfo {
+                oidc_client_id: client_id,
+                oidc_discovery: discovery,
+                oidc_scopes: scopes,
+            };
+            let data = serde_json::to_vec(&authinfo).unwrap_or_default();
+            let _ = websocket.send(Message::binary(data)).await;
+            return None;
+        }
     };
 
     tracing::info!(requested_sub_domain=%requested_sub_domain, "will auth sub domain");

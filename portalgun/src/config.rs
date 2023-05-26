@@ -53,15 +53,6 @@ struct Opts {
 enum SubCommand {
     /// Login using OpenID Connect. This will store the authentication token on disk for future use.
     Login {
-        /// OpenID Discovery URL to use for authentication
-        #[clap(long = "oidc")]
-        oidc: String,
-        /// OpenID Client ID to use for authentication
-        #[clap(long = "client-id")]
-        client_id: String,
-        /// OpenID scopes. separated in comma
-        #[clap(long = "scopes", default_value = "openid,portalgun")]
-        scopes: String,
         /// Corresponding tunnel server websocket URL, example: wss://tunnel.example.com
         #[clap(long = "control-server")]
         control_server: Url,
@@ -106,18 +97,16 @@ impl Config {
         pretty_env_logger::init();
 
         let (secret_key, sub_domain, control_url) = match opts.command {
-            Some(SubCommand::Login {
-                oidc,
-                client_id,
-                scopes,
-                control_server,
-            }) => {
+            Some(SubCommand::Login { control_server }) => {
                 let control_url = control_server.join("wormhole").expect("Malformed URL");
-                let scope_vec: Vec<String> = scopes.split(',').map(|str| str.to_owned()).collect();
-                let refresh = authorize(&oidc, &client_id, scope_vec).await.unwrap();
+
+                let (client_id, discovery, scopes) =
+                    crate::get_auth_info(control_url.as_str()).await.unwrap();
+
+                let refresh = authorize(&discovery, &client_id, scopes).await.unwrap();
 
                 let auth_storage = AuthStorage {
-                    oidc,
+                    oidc: discovery,
                     client_id,
                     refresh_token: refresh,
                     control_server: control_url,
