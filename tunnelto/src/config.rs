@@ -12,8 +12,6 @@ use url::Url;
 
 use crate::openid2::{authorize, fetch_token};
 
-const CTRL_URL_ENV: &str = "CTRL_URL";
-
 const SETTINGS_DIR: &str = ".portalgun";
 const SECRET_KEY_FILE: &str = "auth.json";
 
@@ -64,9 +62,9 @@ enum SubCommand {
         /// OpenID scopes. separated in comma
         #[clap(long = "scopes", default_value = "openid,portalgun")]
         scopes: String,
-        /// Corresponding tunnel server
-        #[clap(long = "control-host")]
-        control_host: String,
+        /// Corresponding tunnel server websocket URL, example: wss://tunnel.example.com
+        #[clap(long = "control-server")]
+        control_server: Url,
     },
 }
 
@@ -92,6 +90,7 @@ pub struct AuthStorage {
     oidc: String,
     client_id: String,
     refresh_token: String,
+    control_server: Url,
 }
 
 impl Config {
@@ -106,13 +105,14 @@ impl Config {
 
         pretty_env_logger::init();
 
-        let (secret_key, sub_domain) = match opts.command {
+        let (secret_key, sub_domain, control_url) = match opts.command {
             Some(SubCommand::Login {
                 oidc,
                 client_id,
                 scopes,
-                control_host,
+                control_server,
             }) => {
+                let control_url = control_server.join("wormhole").expect("Malformed URL");
                 let scope_vec: Vec<String> = scopes.split(',').map(|str| str.to_owned()).collect();
                 let refresh = authorize(&oidc, &client_id, scope_vec).await.unwrap();
 
@@ -120,6 +120,7 @@ impl Config {
                     oidc,
                     client_id,
                     refresh_token: refresh,
+                    control_server: control_url,
                 };
 
                 let auth_json =
@@ -170,7 +171,7 @@ impl Config {
                     std::fs::write(auth_file, json).expect("Failed to store credential.");
                 }
 
-                (access_token, opts.sub_domain)
+                (access_token, opts.sub_domain, credential.control_server)
             }
         };
 
@@ -189,13 +190,6 @@ impl Config {
                 return Err(());
             }
         };
-
-        let control_url: Url = env::var(CTRL_URL_ENV)
-            .map(|url| Url::parse(&url).expect("Failed to parse control url."))
-            .expect("Control URL not set.")
-            .join("wormhole").unwrap();
-
-        info!("Control Server URL: {}", &control_url);
 
         Ok(Config {
             client_id: ClientId::generate(),
