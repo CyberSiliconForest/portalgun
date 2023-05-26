@@ -17,6 +17,7 @@ use reqwest::StatusCode;
 use trust_dns_resolver::TokioAsyncResolver;
 
 #[derive(Error, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum Error {
     #[error("IOError: {0}")]
     IoError(#[from] std::io::Error),

@@ -45,7 +45,7 @@ pub async fn authorize(
 
     let mut auth_request = client
         .exchange_device_code()
-        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e).to_owned()))?;
+        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e)))?;
 
     for scope in scopes {
         auth_request = auth_request.add_scope(Scope::new(scope));
@@ -54,7 +54,7 @@ pub async fn authorize(
     let details: StandardDeviceAuthorizationResponse = auth_request
         .request_async(async_http_client)
         .await
-        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e).to_owned()))?;
+        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e)))?;
 
     match details.verification_uri_complete() {
         Some(uri) => {
@@ -63,8 +63,8 @@ pub async fn authorize(
         None => {
             eprintln!(
                 "Open this URL in your browser:\n{}\nand enter the code: {}",
-                details.verification_uri().to_string(),
-                details.user_code().secret().to_string()
+                **details.verification_uri(),
+                details.user_code().secret()
             );
         }
     }
@@ -73,7 +73,7 @@ pub async fn authorize(
         .exchange_device_access_token(&details)
         .request_async(async_http_client, tokio::time::sleep, None)
         .await
-        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e).to_owned()))?;
+        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e)))?;
 
     Ok(token_result
         .refresh_token()
@@ -109,7 +109,7 @@ pub async fn fetch_token(
         .exchange_refresh_token(&RefreshToken::new(refresh_token.to_owned()))
         .request_async(async_http_client)
         .await
-        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e).to_owned()))?;
+        .map_err(|e| crate::Error::OAuth2(format!("Error: {}", e)))?;
 
     Ok((
         token_result.access_token().secret().clone(),
