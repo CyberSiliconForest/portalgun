@@ -6,7 +6,7 @@ version: '3.4'
 
 services:
   portalgun:
-    image: perillamint/portalgun_moon
+    image: ghcr.io/cybersiliconforest/portalgun_moon:latest
     build:
       context: .
     restart: unless-stopped
