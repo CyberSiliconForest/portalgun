@@ -60,6 +60,20 @@ Options:
 1. See `Dockerfile` for a simple alpine based image that runs that server binary.
 2. Deploy the image where ever you want.
 
+## OIDC provider setup
+Portalgun uses following custom attribute to determine user is allowed to create portal on specific subdomain.
+
+```json
+{
+  "portalgun": [
+    ".*",
+    "or-any-subdomain-matching-regexp-in-here
+  ]
+}
+```
+
+Admins must configure their identity provider appropriately.
+
 ## Testing Locally
 ```shell script
 # Run the Server: xpects TCP traffic on 8080 and control websockets on 5000
