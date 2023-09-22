@@ -173,7 +173,7 @@ impl ControlPacket {
             ControlPacket::End(sid) => [vec![0x04], sid.0.to_vec()].concat(),
             ControlPacket::Ping(tok) => {
                 let data = tok.map_or(EMPTY_STREAM.0.to_vec(), |t| {
-                    vec![TOKEN_STREAM.0.to_vec(), t.0.into_bytes()].concat()
+                    [TOKEN_STREAM.0.to_vec(), t.0.into_bytes()].concat()
                 });
                 [vec![0x05], data].concat()
             }
