@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 perillamint
+//
+// SPDX-License-Identifier: CC0-1.0
+
 pipeline {
     agent none
     stages {
