@@ -1,0 +1,69 @@
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name tunnel.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/tunnel.example.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/tunnel.example.com/privkey.pem; # managed by Certbot
+#    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+#    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    include snippets/ciphers.conf;
+
+    location / {
+        proxy_pass http://127.0.0.1:5050/;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_hide_header       Content-Security-Policy;
+
+        proxy_buffering off;
+        proxy_redirect off;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        tcp_nodelay on;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name *.tunnel.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/tunnel.example.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/tunnel.example.com/privkey.pem; # managed by Certbot
+#    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+#    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    include snippets/ciphers.conf;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080/;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_redirect off;
+        proxy_http_version 1.1;
+
+        client_max_body_size 0; # Stream request body to backend
+
+        tcp_nodelay on;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name tunnel.example.com;
+    server_name *.tunnel.example.com;
+
+    return 301 https://$host$request_uri;
+}
