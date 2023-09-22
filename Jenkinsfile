@@ -86,7 +86,7 @@ pipeline {
                         sh "docker manifest create $DOCKER_IMAGE:$DOCKER_TAG --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
                         script {
                             if (env.DOCKER_LATEST == 'true') {
-                                sh "docker manifest create $DOCKER_IMAGE:latest --amend $DOCKER_IMAGE:latest-amd64 --amend $DOCKER_IMAGE:latest-arm64"
+                                sh "docker manifest create $DOCKER_IMAGE:latest --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
                             }
                         }
                     }
