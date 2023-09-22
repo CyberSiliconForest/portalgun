@@ -13,6 +13,13 @@ pipeline {
                 }
             }
             stages {
+                stage('Lint') {
+                    steps {
+                        sh 'reuse lint'
+                        sh 'cargo fmt --all -- --check'
+                        sh 'cargo clippy --all-targets --all-features -- -Dclippy::all'
+                    }
+                }
                 stage('Build') {
                     steps {
                         sh 'cargo build'
