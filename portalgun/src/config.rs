@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+// SPDX-FileCopyrightText: 2023-2024 perillamint <perillamint@silicon.moe>
 // SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
 //
 // SPDX-License-Identifier: MIT
@@ -190,7 +190,7 @@ impl Config {
             sub_domain,
             dashboard_port: opts.dashboard_port.unwrap_or(0),
             verbose: opts.verbose,
-            secret_key: Some(secret_key).map(SecretKey),
+            secret_key: Some(SecretKey(secret_key)),
             first_run: true,
         })
     }
