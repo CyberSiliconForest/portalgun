@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 perillamint <perillamint@silicon.moe>
+// SPDX-FileCopyrightText: 2023-2024 perillamint <perillamint@silicon.moe>
 // SPDX-FileCopyrightText: 2020-2022 Alex Grinman <me@alexgr.in>
 //
 // SPDX-License-Identifier: MIT
@@ -43,6 +43,9 @@ pub struct Config {
     /// The host on which we create tunnels on
     pub tunnel_host: String,
 
+    /// Disable Portalgun custom attribute validation
+    pub disable_attribute_validation: bool,
+
     /// OIDC Discovery URL for token validation
     pub oidc_discovery_url: String,
 
@@ -86,12 +89,21 @@ impl Config {
 
         let tunnel_host = std::env::var("TUNNEL_HOST").unwrap_or("tunnelto.dev".to_string());
 
+        let disable_attribute_validation =
+            std::env::var("DISABLE_ATTRIBUTE_VALIDATION").unwrap_or("0".to_string()) == "1";
+
         let oidc_discovery_url =
             std::env::var("OIDC_DISCOVERY").expect("OIDC_DISCOVERY is required");
 
         let oidc_client_id = std::env::var("OIDC_CLIENT_ID").expect("OIDC_CLIENT_ID is required");
 
-        let oidc_scopes = std::env::var("OIDC_SCOPES").unwrap_or("openid,portalgun".to_owned());
+        let oidc_scopes = std::env::var("OIDC_SCOPES").unwrap_or(
+            match disable_attribute_validation {
+                false => "openid,portalgun",
+                true => "openid",
+            }
+            .to_owned(),
+        );
 
         Config {
             allowed_hosts,
@@ -104,6 +116,7 @@ impl Config {
             instance_id,
             blocked_ips,
             tunnel_host,
+            disable_attribute_validation,
             oidc_discovery_url,
             oidc_client_id,
             oidc_scopes,
