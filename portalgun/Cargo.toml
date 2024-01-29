@@ -6,7 +6,7 @@
 [package]
 name = "portalgun"
 description = "expose your local web server to the internet with a public url"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Alex Grinman <alex@tunnelto.dev>", "perillamint <perillamint@silicon.moe>"]
 edition = "2021"
 license = "MIT"
