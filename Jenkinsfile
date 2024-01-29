@@ -75,7 +75,8 @@ pipeline {
                         axes {
                             axis {
                                 name 'TARGET'
-                                values 'amd64', 'arm64'
+                                //values 'amd64', 'arm64'
+                                values 'amd64'
                             }
                         }
                         stages {
@@ -94,10 +95,12 @@ pipeline {
                 }
                 stage('Docker manifest') {
                     steps {
-                        sh "docker manifest create $DOCKER_IMAGE:$DOCKER_TAG --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
+                        //sh "docker manifest create $DOCKER_IMAGE:$DOCKER_TAG --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
+                        sh "docker manifest create $DOCKER_IMAGE:$DOCKER_TAG --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64"
                         script {
                             if (env.DOCKER_LATEST == 'true') {
-                                sh "docker manifest create $DOCKER_IMAGE:latest --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
+                                //sh "docker manifest create $DOCKER_IMAGE:latest --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64 --amend $DOCKER_IMAGE:$DOCKER_TAG-arm64"
+                                sh "docker manifest create $DOCKER_IMAGE:latest --amend $DOCKER_IMAGE:$DOCKER_TAG-amd64"
                             }
                         }
                     }
